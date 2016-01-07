@@ -11,9 +11,7 @@ function setup_server() {
 
     pushd /vagrant/
     # Changes quite often
-    sudo tar -xvzf AMBARI-trunk-PHD-latest.tar.gz
     sudo AMBARI-trunk/setup_repo.sh
-
     # Changes less frequently
     sudo PHD-3.3.2.0/setup_repo.sh
     sudo PHD-UTILS-1.1.0.20/setup_repo.sh
@@ -51,6 +49,7 @@ EOF'
 }
 
 function setup_agents() {
+#curl -i -uadmin:admin -H 'X-Requested-By: ambari' -H 'Content-Type: application/json' -X POST -d@bootstrap.json http://c6401.ambari.apache.org:8080/api/v1/bootstrap
   vagrant ssh c6401 -c """
       curl -i -uadmin:admin -H 'X-Requested-By: ambari' -H 'Content-Type: application/json' -X POST -d'{
        \"verbose\":true,
@@ -99,25 +98,32 @@ function create_cluster() {
 }
 
 function setup_tars() {
-if [ ! -d "../PHD-3.3.2.0" ] ; then
+pushd ../
+if [ ! -d "AMBARI-trunk" ] ; then
+  wget http://internal-dist-elb-877805753.us-west-2.elb.amazonaws.com/dist/ambari-internal/PHD/latest/AMBARI-trunk-PHD-latest.tar.gz
+  tar -xvzf AMBARI-trunk-PHD-latest.tar.gz
+fi
+
+if [ ! -d "PHD-3.3.2.0" ] ; then
   wget http://internal-dist-elb-877805753.us-west-2.elb.amazonaws.com/dist/hortonworks/certified/PHD-3.3.2.0-2950-centos6.tar.gz
   tar -xvzf PHD-3.3.2.0-2950-centos6.tar.gz
 fi
 
-if [ ! -d "../PHD-UTILS-1.1.0.20" ] ; then
+if [ ! -d "PHD-UTILS-1.1.0.20" ] ; then
   wget http://internal-dist-elb-877805753.us-west-2.elb.amazonaws.com/dist/hortonworks/certified/PHD-UTILS-1.1.0.20-centos6.tar.gz
   tar -xvzf PHD-UTILS-1.1.0.20-centos6.tar.gz
 fi 
 
-if [ ! -d "../pivotal-hdb-2.0.0.0" ] ; then
+if [ ! -d "pivotal-hdb-2.0.0.0" ] ; then
   wget http://internal-dist-elb-877805753.us-west-2.elb.amazonaws.com/dist/HAWQ/stable/pivotal-hdb-latest-stable.tar.gz
   tar -xvzf pivotal-hdb-latest-stable.tar.gz
 fi    
 
-if [ ! -d "../hawq-plugin-phd-2.0.0" ] ; then
+if [ ! -d "hawq-plugin-phd-2.0.0" ] ; then
   wget http://internal-dist-elb-877805753.us-west-2.elb.amazonaws.com/dist/PHD/latest/hawq-plugin-2.0.0-phd-latest.tar.gz
   tar -xvzf hawq-plugin-2.0.0-phd-latest.tar.gz
 fi
+popd
 }
 
 if [ -z "$1" ] ; then
