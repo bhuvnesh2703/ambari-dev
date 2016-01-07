@@ -1,0 +1,73 @@
+{
+    "Blueprints": {
+        "stack_name": "PHD", 
+        "stack_version": "3.3", 
+        "blueprint_name": "single-node-blueprint"
+    }, 
+    "host_groups": [
+        {
+            "cardinality": "1", 
+            "name": "host_group_1", 
+            "components": [
+                { "name": "NAMENODE" },
+                { "name": "ZOOKEEPER_SERVER" },
+
+                { "name": "ZOOKEEPER_CLIENT" }, 
+                { "name": "HDFS_CLIENT" }, 
+                { "name": "YARN_CLIENT" }, 
+                { "name": "MAPREDUCE2_CLIENT" },
+                { "name": "NODEMANAGER" }, 
+                { "name": "DATANODE" }
+            ]
+        } 
+    ], 
+    "configurations": [
+      {  
+         "mapred-env":{  
+            "mapreduce_log_dir_prefix":"/hadoop/log/hadoop-mapreduce"
+         }
+      },
+      {  
+         "mapred-site":{
+            "mapreduce.map.java.opts":"-Xmx819m",
+            "mapreduce.map.memory.mb":"1024"
+         }
+      },
+      {
+         "yarn-site":{
+            "yarn.timeline-service.leveldb-timeline-store.path":"/hadoop/yarn/timeline",
+            "yarn.nodemanager.delete.debug-delay-sec":"3600",
+            "yarn.nodemanager.log-dirs":"/hadoop/yarn/log",
+            "yarn.nodemanager.local-dirs":"/hadoop/yarn/local"
+         }
+      },
+      {  
+         "yarn-env":{  
+            "yarn_log_dir_prefix":"/hadoop/log/hadoop"
+         }
+      },
+      {  
+         "zookeeper-env":{  
+            "zk_log_dir":"/hadoop/log/zookeeper"
+         }
+      },
+      {  
+         "core-site":{  
+            "io.compression.codecs":"org.apache.hadoop.io.compress.GzipCodec,org.apache.hadoop.io.compress.DefaultCodec,org.apache.hadoop.io.compress.SnappyCodec,com.hadoop.compression.lzo.LzoCodec,com.hadoop.compression.lzo.LzopCodec",
+            "io.compression.codec.lzo.class":"com.hadoop.compression.lzo.LzoCodec",
+            "hadoop.proxyuser.oozie.hosts":"*"
+         }
+      },
+      {  
+         "hdfs-site":{  
+            "dfs.namenode.name.dir":"/hadoop/hdfs/namenode",
+            "dfs.datanode.data.dir":"/hadoop/hdfs/data"
+         }
+      },
+      {  
+         "hadoop-env":{  
+            "hdfs_log_dir_prefix":"/hadoop/log/hadoop"
+         }
+      }
+    ]
+}
