@@ -1,5 +1,5 @@
 {
-    "blueprint": "3-node-hadoop-core",
+    "blueprint": "three-node-blueprint",
     "default_password": "super-secret-password", 
     "host_groups": [
         {

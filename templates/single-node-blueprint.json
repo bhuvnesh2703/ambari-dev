@@ -10,8 +10,10 @@
             "name": "host_group_1", 
             "components": [
                 { "name": "NAMENODE" },
+                { "name": "SECONDARY_NAMENODE" },
                 { "name": "ZOOKEEPER_SERVER" },
-
+                { "name": "APP_TIMELINE_SERVER" },
+                { "name": "RESOURCEMANAGER" },
                 { "name": "ZOOKEEPER_CLIENT" }, 
                 { "name": "HDFS_CLIENT" }, 
                 { "name": "YARN_CLIENT" }, 
