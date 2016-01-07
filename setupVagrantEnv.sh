@@ -91,7 +91,7 @@ NE5OgEXk2wVfZczCZpigBKbKZHNYcelXtTt/nP3rsCuGcM4h53s=
    """
 }
 
-function start_create_cluster() {
+function create_cluster() {
   vagrant ssh c6401 -c """
   sudo curl -u admin:admin -i -H 'X-Requested-By: ambari' -X POST http://c6401.ambari.apache.org:8080/api/v1/blueprints/${BLUEPRINT_NAME} -d @/vagrant/ambari-dev/templates/${BLUEPRINT_FILENAME}
   sudo curl -u admin:admin -i -H 'X-Requested-By: ambari' -X POST http://c6401.ambari.apache.org:8080/api/v1/clusters/phd -d @/vagrant/ambari-dev/templates/${HOSTMAPPING_FILENAME}
@@ -158,4 +158,4 @@ setup_server
 if [ ${HOSTS} -gt "1" ] ; then 
   setup_agents
 fi
-start_create_cluster
+create_cluster
