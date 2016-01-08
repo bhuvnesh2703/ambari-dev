@@ -99,9 +99,11 @@ function create_cluster() {
 
 function setup_tars() {
 pushd ../
-if [ ! -d "AMBARI-trunk" ] ; then
-  wget http://internal-dist-elb-877805753.us-west-2.elb.amazonaws.com/dist/ambari-internal/PHD/latest/AMBARI-trunk-PHD-latest.tar.gz
-  tar -xvzf AMBARI-trunk-PHD-latest.tar.gz
+AMBARI_TARNAME="AMBARI-110675974-Single-Node-Installation-Issues-PHD-latest.tar.gz"
+AMBARI_FOLDERNAME=`echo $AMBARI_TARNAME | awk -F"-PHD-latest.tar.gz" '{print $1}'`
+if [ ! -d ${AMBARI_FOLDERNAME} ] ; then
+  wget http://internal-dist-elb-877805753.us-west-2.elb.amazonaws.com/dist/ambari-internal/PHD/latest/${AMBARI_TARNAME}
+  tar -xvzf ${AMBARI_TARNAME}
 fi
 
 if [ ! -d "PHD-3.3.2.0" ] ; then
