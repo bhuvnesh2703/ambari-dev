@@ -19,13 +19,6 @@ HAWQ_PLUGIN_TARBALL_DOWNLOAD_LINK="http://internal-dist-elb-877805753.us-west-2.
 ###########################################################################################
 # No change required below after you have updated the tarball path above
 ###########################################################################################
-PHD_TARBALL=`basename ${PHD_TARBALL_DOWNLOAD_LINK}`
-PHD_UTILS_TARBALL=`basename ${PHD_UTILS_TARBALL_DOWNLOAD_LINK}` 
-HDB_TARBALL=`basename ${HDB_TARBALL_DOWNLOAD_LINK}`
-HAWQ_PLUGIN_TARBALL=`basename ${HAWQ_PLUGIN_TARBALL_DOWNLOAD_LINK}`
-AMBARI_TARBALL=`basename ${AMBARI_TARBALL_DOWNLOAD_LINK}` 
-
-
 HOSTNAME_PREFIX='c640'
 
 setup_tars() {
