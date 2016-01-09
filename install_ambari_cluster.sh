@@ -17,12 +17,6 @@ HDB_TARBALL_DOWNLOAD_LINK="http://internal-dist-elb-877805753.us-west-2.elb.amaz
 HAWQ_PLUGIN_TARBALL_DOWNLOAD_LINK="http://internal-dist-elb-877805753.us-west-2.elb.amazonaws.com/dist/PHD/latest/hawq-plugin-2.0.0-phd-latest.tar.gz"
 
 ###########################################################################################
-# Hardcoding PHD and PHD-UTILS info used by Repo. Update it if version changes
-##########################################################################################
-PHD_FOLDERNAME="PHD-3.3.2.0"
-PHD_UTILS="PHD-UTILS-1.1.0.20"
-
-###########################################################################################
 # No change required below after you have updated the tarball path above
 ###########################################################################################
 PHD_TARBALL=`basename ${PHD_TARBALL_DOWNLOAD_LINK}`
@@ -46,6 +40,22 @@ setup_tars() {
     FOLDER_NAME=$(tar -tf ${TAR_NAME} | head -1 | tr -d "/")
     if [ ! -d ${FOLDER_NAME} ]; then
       tar -xvzf ${TAR_NAME}
+    fi
+
+    if [[ $FOLDER_NAME == PHD-3* ]] ; then 
+      export PHD_FOLDERNAME=$FOLDER_NAME
+    fi
+    if [[ $FOLDER_NAME == PHD-UTILS* ]]; then
+      export PHD_UTILS_FOLDERNAME=$FOLDER_NAME
+    fi
+    if [[ $FOLDER_NAME == AMBARI* ]]; then
+      export AMBARI_FOLDERNAME=$FOLDER_NAME
+    fi
+    if [[ $FOLDER_NAME == hawq-plugin* ]]; then
+      export HAWQ_PLUGIN_FOLDERNAME=$FOLDER_NAME
+    fi
+    if [[ $FOLDER_NAME == pivotal-hdb* ]]; then
+      export HDB_FOLDERNAME=$FOLDER_NAME
     fi
   done
   popd
