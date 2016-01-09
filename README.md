@@ -1,8 +1,6 @@
 # ambari-dev
 Utility to setup ambari build environment for development purpose.
 
-**Currently works for deploying single node vagrant clusters**
-
 Pre-requisite
 - Vagrant
 
