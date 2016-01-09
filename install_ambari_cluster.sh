@@ -1,25 +1,34 @@
 #!/bin/bash
 set -e
-HOSTNAME_PREFIX='c640'
+###########################################################################################
+# A simple bash script to install vagrant based ambari clusters
+# Usage: ./install_ambari_cluster.sh
+# When prompted enter the option to determine the type of cluster to be installed
+###########################################################################################
 
-# Change the tarball download link to
-# the desired tarball link
+###########################################################################################
+# To test your ambari development build, update XXXXX_TARBALL_DOWNLOAD_LINK
+# link to the path of the tarball from where it can be downloaded
+###########################################################################################
 AMBARI_TARBALL_DOWNLOAD_LINK="https://jenkins.eng.pivotal.io/jenkins/view/AMBR-OSS-BUILD/job/AMBR-OSS-BUILD-trunk/lastSuccessfulBuild/artifact/target/AMBARI-trunk-PHD-latest.tar.gz"
+PHD_TARBALL_DOWNLOAD_LINK="http://internal-dist-elb-877805753.us-west-2.elb.amazonaws.com/dist/hortonworks/certified/PHD-3.3.2.0-2950-centos6.tar.gz" 
+PHD_UTILS_TARBALL_DOWNLOAD_LINK="http://internal-dist-elb-877805753.us-west-2.elb.amazonaws.com/dist/hortonworks/certified/PHD-UTILS-1.1.0.20-centos6.tar.gz"
+HDB_TARBALL_DOWNLOAD_LINK="http://internal-dist-elb-877805753.us-west-2.elb.amazonaws.com/dist/HAWQ/stable/pivotal-hdb-latest-stable.tar.gz"
+HAWQ_PLUGIN_TARBALL_DOWNLOAD_LINK="http://internal-dist-elb-877805753.us-west-2.elb.amazonaws.com/dist/PHD/latest/hawq-plugin-2.0.0-phd-latest.tar.gz"
+
+
+###########################################################################################
+# No change required below after you have updated the tarball path above
+###########################################################################################
+PHD_TARBALL=`basename ${PHD_TARBALL_DOWNLOAD_LINK}`
+PHD_UTILS_TARBALL=`basename ${PHD_UTILS_TARBALL_DOWNLOAD_LINK}` 
+HDB_TARBALL=`basename ${HDB_TARBALL_DOWNLOAD_LINK}`
+HAWQ_PLUGIN_TARBALL=`basename ${HAWQ_PLUGIN_TARBALL_DOWNLOAD_LINK}`
 AMBARI_TARBALL=`basename ${AMBARI_TARBALL_DOWNLOAD_LINK}` 
 
-PHD_TARBALL_DOWNLOAD_LINK="http://internal-dist-elb-877805753.us-west-2.elb.amazonaws.com/dist/hortonworks/certified/PHD-3.3.2.0-2950-centos6.tar.gz" 
-PHD_TARBALL=`basename ${PHD_TARBALL_DOWNLOAD_LINK}`
+HOSTNAME_PREFIX='c640'
 
-PHD_UTILS_TARBALL_DOWNLOAD_LINK="http://internal-dist-elb-877805753.us-west-2.elb.amazonaws.com/dist/hortonworks/certified/PHD-UTILS-1.1.0.20-centos6.tar.gz"
-PHD_UTILS_TARBALL=`basename ${PHD_UTILS_TARBALL_DOWNLOAD_LINK}` 
-
-HDB_TARBALL_DOWNLOAD_LINK="http://internal-dist-elb-877805753.us-west-2.elb.amazonaws.com/dist/HAWQ/stable/pivotal-hdb-latest-stable.tar.gz"
-HDB_TARBALL=`basename ${HDB_TARBALL_DOWNLOAD_LINK}`
-
-HAWQ_PLUGIN_TARBALL_DOWNLOAD_LINK="http://internal-dist-elb-877805753.us-west-2.elb.amazonaws.com/dist/PHD/latest/hawq-plugin-2.0.0-phd-latest.tar.gz"
-HAWQ_PLUGIN_TARBALL=`basename ${HAWQ_PLUGIN_TARBALL_DOWNLOAD_LINK}`
-
-function setup_tars() {
+setup_tars() {
   pushd ../
   if [ ! -f ${AMBARI_TARBALL} ] ; then 
     wget ${AMBARI_TARBALL_DOWNLOAD_LINK}
@@ -85,7 +94,7 @@ setup_ambari_server() {
     pushd /vagrant/
     sudo ${AMBARI_FOLDERNAME}/setup_repo.sh
     sudo ${PHD_FOLDERNAME}/setup_repo.sh
-    sudo $PHD_UTILS_FOLDERNAME}/setup_repo.sh
+    sudo ${PHD_UTILS_FOLDERNAME}/setup_repo.sh
     sudo ${HDB_FOLDERNAME}/setup_repo.sh
     sudo ${HAWQ_PLUGIN_FOLDERNAME}/setup_repo.sh
     popd
@@ -125,7 +134,7 @@ bootstrap() {
   sleep 15
 }
 
-function create_cluster() {
+create_cluster() {
   curl -u admin:admin -i -H 'X-Requested-By: ambari' -X POST http://c6401.ambari.apache.org:8080/api/v1/blueprints/blueprint -d @templates/$1
   curl -u admin:admin -i -H 'X-Requested-By: ambari' -X POST http://c6401.ambari.apache.org:8080/api/v1/clusters/phd -d @templates/$2
 }
@@ -168,10 +177,10 @@ else
   exit 1
 fi
 
-#setup_tars
-#setup_vagrant ${NODES}
-#setup_ambari_server
-#if [ ${user_nodes_input} -eq "2" ]; then
-#  bootstrap
-#fi
+setup_tars
+setup_vagrant ${NODES}
+setup_ambari_server
+if [ ${user_nodes_input} -eq "2" ]; then
+  bootstrap
+fi
 create_cluster ${BLUEPRINT_NAME}.json ${HOSTMAPPING_FILENAME}.json
