@@ -16,6 +16,11 @@ PHD_UTILS_TARBALL_DOWNLOAD_LINK="http://internal-dist-elb-877805753.us-west-2.el
 HDB_TARBALL_DOWNLOAD_LINK="http://internal-dist-elb-877805753.us-west-2.elb.amazonaws.com/dist/HAWQ/stable/pivotal-hdb-latest-stable.tar.gz"
 HAWQ_PLUGIN_TARBALL_DOWNLOAD_LINK="http://internal-dist-elb-877805753.us-west-2.elb.amazonaws.com/dist/PHD/latest/hawq-plugin-2.0.0-phd-latest.tar.gz"
 
+###########################################################################################
+# Hardcoding PHD and PHD-UTILS info used by Repo. Update it if version changes
+##########################################################################################
+PHD_FOLDERNAME="PHD-3.3.2.0"
+PHD_UTILS="PHD-UTILS-1.1.0.20"
 
 ###########################################################################################
 # No change required below after you have updated the tarball path above
@@ -26,49 +31,23 @@ HDB_TARBALL=`basename ${HDB_TARBALL_DOWNLOAD_LINK}`
 HAWQ_PLUGIN_TARBALL=`basename ${HAWQ_PLUGIN_TARBALL_DOWNLOAD_LINK}`
 AMBARI_TARBALL=`basename ${AMBARI_TARBALL_DOWNLOAD_LINK}` 
 
+
 HOSTNAME_PREFIX='c640'
 
 setup_tars() {
   pushd ../
-  if [ ! -f ${AMBARI_TARBALL} ] ; then 
-    wget ${AMBARI_TARBALL_DOWNLOAD_LINK}
-  fi
-  export AMBARI_FOLDERNAME=$(tar -tf ${AMBARI_TARBALL} | head -1 | tr -d "/")
-  if [ ! -d ${AMBARI_FOLDERNAME} ] ; then
-    tar -xzf ${AMBARI_TARBALL}
-  fi
-
-  if [ ! -f ${PHD_TARBALL} ] ; then 
-    wget ${PHD_TARBALL_DOWNLOAD_LINK}
-  fi
-  export PHD_FOLDERNAME=$(tar -tf ${PHD_TARBALL} | head -1 | tr -d "/")
-  if [ ! -d ${PHD_FOLDERNAME} ] ; then
-    tar -xzf ${PHD_TARBALL}
-  fi
-
-  if [ ! -f ${PHD_UTILS_TARBALL} ] ; then 
-    wget ${PHD_UTILS_TARBALL_DOWNLOAD_LINK}
-  fi
-  export PHD_UTILS_FOLDERNAME=$(tar -tf ${PHD_UTILS_TARBALL} | head -1 | tr -d "/")
-  if [ ! -d ${PHD_UTILS_FOLDERNAME} ] ; then
-    tar -xzf ${PHD_UTILS_TARBALL}
-  fi 
-
-  if [ ! -f ${HDB_TARBALL} ] ; then 
-    wget ${HDB_TARBALL_DOWNLOAD_LINK}
-  fi
-  export HDB_FOLDERNAME=$(tar -tf ${HDB_TARBALL} | head -1 | tr -d "/")
-  if [ ! -d ${HDB_FOLDERNAME} ] ; then
-    tar -xzf ${HDB_TARBALL}
-  fi    
-
-  if [ ! -f ${HAWQ_PLUGIN_TARBALL} ] ; then 
-    wget ${HAWQ_PLUGIN_TARBALL_DOWNLOAD_LINK}
-  fi
-  export HAWQ_PLUGIN_FOLDERNAME=$(tar -tf ${HAWQ_PLUGIN_TARBALL} | head -1 | tr -d "/")
-  if [ ! -d ${HAWQ_PLUGIN_FOLDERNAME} ] ; then
-    tar -xzf ${HAWQ_PLUGIN_TARBALL}
-  fi
+  for DOWNLOAD_LINK in $AMBARI_TARBALL_DOWNLOAD_LINK $PHD_TARBALL_DOWNLOAD_LINK $PHD_UTILS_TARBALL_DOWNLOAD_LINK $HDB_TARBALL_DOWNLOAD_LINK $HAWQ_PLUGIN_TARBALL_DOWNLOAD_LINK
+  do
+    TAR_NAME=`basename ${DOWNLOAD_LINK}`
+    echo ${TAR_NAME}
+    if [ ! -f ${TAR_NAME} ] ; then
+      wget ${DOWNLOAD_LINK}
+    fi
+    FOLDER_NAME=$(tar -tf ${TAR_NAME} | head -1 | tr -d "/")
+    if [ ! -d ${FOLDER_NAME} ]; then
+      tar -xvzf ${TAR_NAME}
+    fi
+  done
   popd
 }
 
