@@ -2,7 +2,7 @@
     "Blueprints": {
         "stack_name": "PHD", 
         "stack_version": "3.3", 
-        "blueprint_name": "three-node-blueprint"
+        "blueprint_name": "one-node-hdfs-yarn-blueprint"
     }, 
     "host_groups": [
         {
@@ -10,8 +10,10 @@
             "name": "host_group_1", 
             "components": [
                 { "name": "NAMENODE" },
+                { "name": "SECONDARY_NAMENODE" },
                 { "name": "ZOOKEEPER_SERVER" },
-
+                { "name": "APP_TIMELINE_SERVER" },
+                { "name": "RESOURCEMANAGER" },
                 { "name": "ZOOKEEPER_CLIENT" }, 
                 { "name": "HDFS_CLIENT" }, 
                 { "name": "YARN_CLIENT" }, 
@@ -19,39 +21,15 @@
                 { "name": "NODEMANAGER" }, 
                 { "name": "DATANODE" }
             ]
-        }, 
-        {
-            "cardinality": "1", 
-            "name": "host_group_2", 
-            "components": [
-                { "name": "SECONDARY_NAMENODE" },
-                { "name": "RESOURCEMANAGER" },
-                { "name": "APP_TIMELINE_SERVER" },
-                { "name": "HISTORYSERVER" }, 
-                
-                { "name": "ZOOKEEPER_CLIENT" }, 
-                { "name": "HDFS_CLIENT" }, 
-                { "name": "YARN_CLIENT" }, 
-                { "name": "MAPREDUCE2_CLIENT" },
-                { "name": "NODEMANAGER" }, 
-                { "name": "DATANODE" } 
-            ]
-        },
-        {
-            "cardinality": "3",
-            "name": "host_group_3", 
-            "components": [
-                { "name": "ZOOKEEPER_SERVER" },
-                { "name": "NODEMANAGER" }, 
-                { "name": "DATANODE" }, 
-                { "name": "ZOOKEEPER_CLIENT" }, 
-                { "name": "HDFS_CLIENT" }, 
-                { "name": "YARN_CLIENT" }, 
-                { "name": "MAPREDUCE2_CLIENT" }
-            ]
         } 
     ], 
     "configurations": [
+      {  
+         "mapred-site":{
+            "mapreduce.map.java.opts":"-Xmx819m",
+            "mapreduce.map.memory.mb":"1024"
+         }
+      },
       {  
          "core-site":{  
             "io.compression.codecs":"org.apache.hadoop.io.compress.GzipCodec,org.apache.hadoop.io.compress.DefaultCodec,org.apache.hadoop.io.compress.SnappyCodec,com.hadoop.compression.lzo.LzoCodec,com.hadoop.compression.lzo.LzopCodec",

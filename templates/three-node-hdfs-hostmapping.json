@@ -1,5 +1,5 @@
 {
-    "blueprint": "three-node-blueprint",
+    "blueprint": "three-node-hdfs-blueprint",
     "default_password": "super-secret-password", 
     "host_groups": [
         {

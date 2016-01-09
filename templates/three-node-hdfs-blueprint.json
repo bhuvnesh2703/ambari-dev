@@ -2,7 +2,7 @@
     "Blueprints": {
         "stack_name": "PHD", 
         "stack_version": "3.3", 
-        "blueprint_name": "single-node-hdfs-only-blueprint"
+        "blueprint_name": "three-node-hdfs-blueprint"
     }, 
     "host_groups": [
         {
@@ -10,11 +10,30 @@
             "name": "host_group_1", 
             "components": [
                 { "name": "NAMENODE" },
-                { "name": "SECONDARY_NAMENODE" },
                 { "name": "ZOOKEEPER_SERVER" },
                 { "name": "ZOOKEEPER_CLIENT" }, 
                 { "name": "HDFS_CLIENT" }, 
                 { "name": "DATANODE" }
+            ]
+        }, 
+        {
+            "cardinality": "1", 
+            "name": "host_group_2", 
+            "components": [
+                { "name": "SECONDARY_NAMENODE" },
+                { "name": "ZOOKEEPER_CLIENT" }, 
+                { "name": "HDFS_CLIENT" }, 
+                { "name": "DATANODE" } 
+            ]
+        },
+        {
+            "cardinality": "3",
+            "name": "host_group_3", 
+            "components": [
+                { "name": "ZOOKEEPER_SERVER" },
+                { "name": "DATANODE" }, 
+                { "name": "ZOOKEEPER_CLIENT" }, 
+                { "name": "HDFS_CLIENT" }
             ]
         } 
     ], 

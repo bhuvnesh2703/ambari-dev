@@ -1,7 +1,80 @@
 #!/bin/bash
+set -e
 HOSTNAME_PREFIX='c640'
 
-function setup_server() {
+# Change the tarball download link to
+# the desired tarball link
+AMBARI_TARBALL_DOWNLOAD_LINK="https://jenkins.eng.pivotal.io/jenkins/view/AMBR-OSS-BUILD/job/AMBR-OSS-BUILD-trunk/lastSuccessfulBuild/artifact/target/AMBARI-trunk-PHD-latest.tar.gz"
+AMBARI_TARBALL=`basename ${AMBARI_TARBALL_DOWNLOAD_LINK}` 
+
+PHD_TARBALL_DOWNLOAD_LINK="http://internal-dist-elb-877805753.us-west-2.elb.amazonaws.com/dist/hortonworks/certified/PHD-3.3.2.0-2950-centos6.tar.gz" 
+PHD_TARBALL=`basename ${PHD_TARBALL_DOWNLOAD_LINK}`
+
+PHD_UTILS_TARBALL_DOWNLOAD_LINK="http://internal-dist-elb-877805753.us-west-2.elb.amazonaws.com/dist/hortonworks/certified/PHD-UTILS-1.1.0.20-centos6.tar.gz"
+PHD_UTILS_TARBALL=`basename ${PHD_UTILS_TARBALL_DOWNLOAD_LINK}` 
+
+HDB_TARBALL_DOWNLOAD_LINK="http://internal-dist-elb-877805753.us-west-2.elb.amazonaws.com/dist/HAWQ/stable/pivotal-hdb-latest-stable.tar.gz"
+HDB_TARBALL=`basename ${HDB_TARBALL_DOWNLOAD_LINK}`
+
+HAWQ_PLUGIN_TARBALL_DOWNLOAD_LINK="http://internal-dist-elb-877805753.us-west-2.elb.amazonaws.com/dist/PHD/latest/hawq-plugin-2.0.0-phd-latest.tar.gz"
+HAWQ_PLUGIN_TARBALL=`basename ${HAWQ_PLUGIN_TARBALL_DOWNLOAD_LINK}`
+
+function setup_tars() {
+  pushd ../
+  if [ ! -f ${AMBARI_TARBALL} ] ; then 
+    wget ${AMBARI_TARBALL_DOWNLOAD_LINK}
+  fi
+  AMBARI_FOLDERNAME=$(tar -tf ${AMBARI_TARBALL} | head -1 | tr -d "/")
+  if [ ! -d ${AMBARI_FOLDERNAME} ] ; then
+    tar -xzf ${AMBARI_TARBALL}
+  fi
+
+  if [ ! -f ${PHD_TARBALL} ] ; then 
+    wget ${PHD_TARBALL_DOWNLOAD_LINK}
+  fi
+  PHD_FOLDERNAME=$(tar -tf ${PHD_TARBALL} | head -1 | tr -d "/")
+  if [ ! -d ${PHD_FOLDERNAME} ] ; then
+    tar -xzf ${PHD_TARBALL}
+  fi
+
+  if [ ! -f ${PHD_UTILS_TARBALL} ] ; then 
+    wget ${PHD_UTILS_TARBALL_DOWNLOAD_LINK}
+  fi
+  PHD_UTILS_FOLDERNAME=$(tar -tf ${PHD_UTILS_TARBALL} | head -1 | tr -d "/")
+  if [ ! -d ${PHD_UTILS_FOLDERNAME} ] ; then
+    tar -xzf ${PHD_UTILS_TARBALL}
+  fi 
+
+  if [ ! -f ${HDB_TARBALL} ] ; then 
+    wget ${HDB_TARBALL_DOWNLOAD_LINK}
+  fi
+  HDB_FOLDERNAME=$(tar -tf ${HDB_TARBALL} | head -1 | tr -d "/")
+  if [ ! -d ${HDB_FOLDERNAME} ] ; then
+    tar -xzf ${HDB_TARBALL}
+  fi    
+
+  if [ ! -f ${HAWQ_PLUGIN_TARBALL} ] ; then 
+    wget ${HAWQ_PLUGIN_TARBALL_DOWNLOAD_LINK}
+  fi
+  HAWQ_PLUGIN_FOLDERNAME=$(tar -tf ${HAWQ_PLUGIN_TARBALL} | head -1 | tr -d "/")
+  if [ ! -d ${HAWQ_PLUGIN_FOLDERNAME} ] ; then
+    tar -xzf ${HAWQ_PLUGIN_TARBALL}
+  fi
+  popd
+}
+
+
+setup_vagrant() {
+  for ((i=1; i<=$1; i++)); do
+    HOST=${HOSTNAME_PREFIX}${i}
+    echo "Destroying Vagrant machine: ${HOST}"
+    vagrant destroy -f ${HOST}
+    echo "Creating Vagrant machine: ${HOST}"
+    vagrant up ${HOST}
+  done
+}
+
+setup_ambari_server() {
   # Login to vagrant and setup the environment
   vagrant ssh c6401 -c """
     sudo yum -y install vim httpd
@@ -10,13 +83,12 @@ function setup_server() {
     sudo service ntpd start
 
     pushd /vagrant/
-    # Changes quite often
-    sudo AMBARI-trunk/setup_repo.sh
-    # Changes less frequently
-    sudo PHD-3.3.2.0/setup_repo.sh
-    sudo PHD-UTILS-1.1.0.20/setup_repo.sh
-    sudo pivotal-hdb-2.0.0.0/setup_repo.sh
-    sudo hawq-plugin-phd-2.0.0/setup_repo.sh
+    sudo ${AMBARI_FOLDERNAME}/setup_repo.sh
+    sudo ${PHD_FOLDERNAME}/setup_repo.sh
+    sudo $PHD_UTILS_FOLDERNAME}/setup_repo.sh
+    sudo ${HDB_FOLDERNAME}/setup_repo.sh
+    sudo ${HAWQ_PLUGIN_FOLDERNAME}/setup_repo.sh
+    popd
 
     sudo yum -y install ambari-server hawq-plugin ambari-agent
     sudo ambari-agent start
@@ -44,126 +116,62 @@ function setup_server() {
     </reposinfo>
 EOF'
     sudo ambari-server setup -s && sudo ambari-server start
-    sleep 10
+    sleep 30
 """ 
 }
 
-function setup_agents() {
-#curl -i -uadmin:admin -H 'X-Requested-By: ambari' -H 'Content-Type: application/json' -X POST -d@bootstrap.json http://c6401.ambari.apache.org:8080/api/v1/bootstrap
-  vagrant ssh c6401 -c """
-      curl -i -uadmin:admin -H 'X-Requested-By: ambari' -H 'Content-Type: application/json' -X POST -d'{
-       \"verbose\":true,
-       \"sshKey\":\"-----BEGIN RSA PRIVATE KEY-----
-MIIEogIBAAKCAQEA6NF8iallvQVp22WDkTkyrtvp9eWW6A8YVr+kz4TjGYe7gHzI
-w+niNltGEFHzD8+v1I2YJ6oXevct1YeS0o9HZyN1Q9qgCgzUFtdOKLv6IedplqoP
-kcmF0aYet2PkEDo3MlTBckFXPITAMzF8dJSIFo9D8HfdOV0IAdx4O7PtixWKn5y2
-hMNG0zQPyUecp4pzC6kivAIhyfHilFR61RGL+GPXQ2MWZWFYbAGjyiYJnAmCP3NO
-Td0jMZEnDkbUvxhMmBYSdETk1rRgm+R4LOzFUGaHqHDLKLX+FIPKcF96hrucXzcW
-yLbIbEgE98OHlnVYCzRdK8jlqm8tehUc9c9WhQIBIwKCAQEA4iqWPJXtzZA68mKd
-ELs4jJsdyky+ewdZeNds5tjcnHU5zUYE25K+ffJED9qUWICcLZDc81TGWjHyAqD1
-Bw7XpgUwFgeUJwUlzQurAv+/ySnxiwuaGJfhFM1CaQHzfXphgVml+fZUvnJUTvzf
-TK2Lg6EdbUE9TarUlBf/xPfuEhMSlIE5keb/Zz3/LUlRg8yDqz5w+QWVJ4utnKnK
-iqwZN0mwpwU7YSyJhlT4YV1F3n4YjLswM5wJs2oqm0jssQu/BT0tyEXNDYBLEF4A
-sClaWuSJ2kjq7KhrrYXzagqhnSei9ODYFShJu8UWVec3Ihb5ZXlzO6vdNQ1J9Xsf
-4m+2ywKBgQD6qFxx/Rv9CNN96l/4rb14HKirC2o/orApiHmHDsURs5rUKDx0f9iP
-cXN7S1uePXuJRK/5hsubaOCx3Owd2u9gD6Oq0CsMkE4CUSiJcYrMANtx54cGH7Rk
-EjFZxK8xAv1ldELEyxrFqkbE4BKd8QOt414qjvTGyAK+OLD3M2QdCQKBgQDtx8pN
-CAxR7yhHbIWT1AH66+XWN8bXq7l3RO/ukeaci98JfkbkxURZhtxV/HHuvUhnPLdX
-3TwygPBYZFNo4pzVEhzWoTtnEtrFueKxyc3+LjZpuo+mBlQ6ORtfgkr9gBVphXZG
-YEzkCD3lVdl8L4cw9BVpKrJCs1c5taGjDgdInQKBgHm/fVvv96bJxc9x1tffXAcj
-3OVdUN0UgXNCSaf/3A/phbeBQe9xS+3mpc4r6qvx+iy69mNBeNZ0xOitIjpjBo2+
-dBEjSBwLk5q5tJqHmy/jKMJL4n9ROlx93XS+njxgibTvU6Fp9w+NOFD/HvxB3Tcz
-6+jJF85D5BNAG3DBMKBjAoGBAOAxZvgsKN+JuENXsST7F89Tck2iTcQIT8g5rwWC
-P9Vt74yboe2kDT531w8+egz7nAmRBKNM751U/95P9t88EDacDI/Z2OwnuFQHCPDF
-llYOUI+SpLJ6/vURRbHSnnn8a/XG+nzedGH5JGqEJNQsz+xT2axM0/W/CRknmGaJ
-kda/AoGANWrLCz708y7VYgAtW2Uf1DPOIYMdvo6fxIB5i9ZfISgcJ/bbCUkFrhoH
-+vq/5CIWxCPp0f85R4qxxQ5ihxJ0YDQT9Jpx4TMss4PSavPaBH3RXow5Ohe+bYoQ
-NE5OgEXk2wVfZczCZpigBKbKZHNYcelXtTt/nP3rsCuGcM4h53s=
------END RSA PRIVATE KEY-----\",
-       \"hosts\":[
-          \"c6401.ambari.apache.org\",
-          \"c6402.ambari.apache.org\",
-          \"c6403.ambari.apache.org\"
-       ],
-       \"user\":\"vagrant\"
-      }' http://c6401.ambari.apche.org:8080/api/v1/bootstrap
-   """
+bootstrap() {
+  curl -i -uadmin:admin -H 'X-Requested-By: ambari' -H 'Content-Type: application/json' -X POST -d@templates/bootstrap.json http://c6401.ambari.apache.org:8080/api/v1/bootstrap
+  sleep 15
 }
 
 function create_cluster() {
-  vagrant ssh c6401 -c """
-  sudo curl -u admin:admin -i -H 'X-Requested-By: ambari' -X POST http://c6401.ambari.apache.org:8080/api/v1/blueprints/${BLUEPRINT_NAME} -d @/vagrant/ambari-dev/templates/${BLUEPRINT_FILENAME}
-  sudo curl -u admin:admin -i -H 'X-Requested-By: ambari' -X POST http://c6401.ambari.apache.org:8080/api/v1/clusters/phd -d @/vagrant/ambari-dev/templates/${HOSTMAPPING_FILENAME}
-  """
+  curl -u admin:admin -i -H 'X-Requested-By: ambari' -X POST http://c6401.ambari.apache.org:8080/api/v1/blueprints/blueprint -d @templates/$1
+  curl -u admin:admin -i -H 'X-Requested-By: ambari' -X POST http://c6401.ambari.apache.org:8080/api/v1/clusters/phd -d @templates/$2
 }
 
-function setup_tars() {
-pushd ../
-AMBARI_TARNAME="AMBARI-110675974-Single-Node-Installation-Issues-PHD-latest.tar.gz"
-AMBARI_FOLDERNAME=`echo $AMBARI_TARNAME | awk -F"-PHD-latest.tar.gz" '{print $1}'`
-if [ ! -d ${AMBARI_FOLDERNAME} ] ; then
-  wget http://internal-dist-elb-877805753.us-west-2.elb.amazonaws.com/dist/ambari-internal/PHD/latest/${AMBARI_TARNAME}
-  tar -xvzf ${AMBARI_TARNAME}
-fi
-
-if [ ! -d "PHD-3.3.2.0" ] ; then
-  wget http://internal-dist-elb-877805753.us-west-2.elb.amazonaws.com/dist/hortonworks/certified/PHD-3.3.2.0-2950-centos6.tar.gz
-  tar -xvzf PHD-3.3.2.0-2950-centos6.tar.gz
-fi
-
-if [ ! -d "PHD-UTILS-1.1.0.20" ] ; then
-  wget http://internal-dist-elb-877805753.us-west-2.elb.amazonaws.com/dist/hortonworks/certified/PHD-UTILS-1.1.0.20-centos6.tar.gz
-  tar -xvzf PHD-UTILS-1.1.0.20-centos6.tar.gz
-fi 
-
-if [ ! -d "pivotal-hdb-2.0.0.0" ] ; then
-  wget http://internal-dist-elb-877805753.us-west-2.elb.amazonaws.com/dist/HAWQ/stable/pivotal-hdb-latest-stable.tar.gz
-  tar -xvzf pivotal-hdb-latest-stable.tar.gz
-fi    
-
-if [ ! -d "hawq-plugin-phd-2.0.0" ] ; then
-  wget http://internal-dist-elb-877805753.us-west-2.elb.amazonaws.com/dist/PHD/latest/hawq-plugin-2.0.0-phd-latest.tar.gz
-  tar -xvzf hawq-plugin-2.0.0-phd-latest.tar.gz
-fi
-popd
-}
-
-if [ -z "$1" ] ; then
-  HOSTS=1
-  echo """Cluster required:
-        Press 1 for HDFS only
-        Press 2 for HDFS and YARN"""
-  read user_input
-  if [ $user_input == "1" ] ; then
-    BLUEPRINT_NAME='single-node-hdfs-only-blueprint'
-    HOSTMAPPING_FILENAME='single-node-hdfs-only-hostmapping-template.json'
-  elif [ $user_input == "2" ] ; then
-    BLUEPRINT_NAME='single-node-blueprint'
-    HOSTMAPPING_FILENAME='single-node-hostmapping-template.json'
-  fi
-  BLUEPRINT_FILENAME=${BLUEPRINT_NAME}.json
-else
-  echo "No parameters accepted"
-  HOSTS=3
+echo """Services required, enter option 1 or 2:
+        1: HDFS Service
+        2: HDFS and YARN Service"""
+read user_service_input
+if  [ ! ${user_service_input} -eq "1" ] && [ ! ${user_service_input} -eq "2" ] ;  then
+  echo "Invalid options chosen for services required, please choose either option 1 or 2"
   exit 1
-  # TODO: Ensure that 3 node cluster works depending on command line input params
-  BLUEPRINT_NAME='three-node-blueprint'
-  BLUEPRINT_FILENAME=${BLUEPRINT_NAME}.json
-  HOSTMAPPING_FILENAME='three-node-hostmapping-template.json'
 fi
 
-setup_tars
+echo """Nodes required, enter option 1 or 2:
+        1: Single Node cluster
+        2: Three Node cluster"""
 
-for ((i=1; i<=HOSTS; i++));
-  do
-    vagrant_machine_name=`echo ${HOSTNAME_PREFIX}${i}`
-    echo "Destroying $vagrant_machine_name"
-    vagrant destroy -f $vagrant_machine_name
-    echo "Creating $vagrant_machine_name"
-    vagrant up $vagrant_machine_name
-done
-setup_server
-if [ ${HOSTS} -gt "1" ] ; then 
-  setup_agents
+read user_nodes_input
+
+if [ ${user_nodes_input} -eq "1" ] ; then
+  NODES=1
+  if  [ ${user_service_input} -eq "1" ]; then
+    BLUEPRINT_NAME='one-node-hdfs-blueprint'
+    HOSTMAPPING_FILENAME='one-node-hdfs-hostmapping'
+  else
+    BLUEPRINT_NAME='one-node-hdfs-yarn-blueprint'
+    HOSTMAPPING_FILENAME='one-node-hdfs-yarn-hostmapping'
+  fi
+elif [ ${user_nodes_input} -eq "2" ]; then
+  NODES=3
+  if  [ ${user_service_input} -eq "1" ]; then
+    BLUEPRINT_NAME='three-node-hdfs-blueprint'
+    HOSTMAPPING_FILENAME='three-node-hdfs-hostmapping'
+  else
+    BLUEPRINT_NAME='three-node-hdfs-yarn-blueprint'
+    HOSTMAPPING_FILENAME='three-node-hdfs-yarn-hostmapping'
+  fi
+else
+  echo "Invalid option chosen for nodes required, please choose either option 1 or 2"
+  exit 1
 fi
-create_cluster
+
+#setup_tars
+#setup_vagrant ${NODES}
+#setup_ambari_server
+#if [ ${user_nodes_input} -eq "2" ]; then
+#  bootstrap
+#fi
+create_cluster ${BLUEPRINT_NAME}.json ${HOSTMAPPING_FILENAME}.json

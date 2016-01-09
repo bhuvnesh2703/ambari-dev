@@ -1,5 +1,5 @@
 {
-    "blueprint": "single-node-hdfs-only-blueprint",
+    "blueprint": "one-node-hdfs-blueprint",
     "default_password": "super-secret-password", 
     "host_groups": [
         {
