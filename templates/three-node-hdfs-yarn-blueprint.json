@@ -1,0 +1,67 @@
+{
+    "Blueprints": {
+        "stack_name": "PHD", 
+        "stack_version": "3.3", 
+        "blueprint_name": "three-node-hdfs-yarn-blueprint"
+    }, 
+    "host_groups": [
+        {
+            "cardinality": "1", 
+            "name": "host_group_1", 
+            "components": [
+                { "name": "NAMENODE" },
+                { "name": "ZOOKEEPER_SERVER" },
+                { "name": "ZOOKEEPER_CLIENT" }, 
+                { "name": "HDFS_CLIENT" }, 
+                { "name": "YARN_CLIENT" }, 
+                { "name": "MAPREDUCE2_CLIENT" },
+                { "name": "NODEMANAGER" }, 
+                { "name": "DATANODE" }
+            ]
+        }, 
+        {
+            "cardinality": "1", 
+            "name": "host_group_2", 
+            "components": [
+                { "name": "SECONDARY_NAMENODE" },
+                { "name": "RESOURCEMANAGER" },
+                { "name": "APP_TIMELINE_SERVER" },
+                { "name": "HISTORYSERVER" }, 
+                { "name": "ZOOKEEPER_CLIENT" }, 
+                { "name": "HDFS_CLIENT" }, 
+                { "name": "YARN_CLIENT" }, 
+                { "name": "MAPREDUCE2_CLIENT" },
+                { "name": "NODEMANAGER" }, 
+                { "name": "DATANODE" } 
+            ]
+        },
+        {
+            "cardinality": "3",
+            "name": "host_group_3", 
+            "components": [
+                { "name": "ZOOKEEPER_SERVER" },
+                { "name": "NODEMANAGER" }, 
+                { "name": "DATANODE" }, 
+                { "name": "ZOOKEEPER_CLIENT" }, 
+                { "name": "HDFS_CLIENT" }, 
+                { "name": "YARN_CLIENT" }, 
+                { "name": "MAPREDUCE2_CLIENT" }
+            ]
+        } 
+    ], 
+    "configurations": [
+      {  
+         "core-site":{  
+            "io.compression.codecs":"org.apache.hadoop.io.compress.GzipCodec,org.apache.hadoop.io.compress.DefaultCodec,org.apache.hadoop.io.compress.SnappyCodec,com.hadoop.compression.lzo.LzoCodec,com.hadoop.compression.lzo.LzopCodec",
+            "io.compression.codec.lzo.class":"com.hadoop.compression.lzo.LzoCodec",
+            "hadoop.proxyuser.oozie.hosts":"*"
+         }
+      },
+      {  
+         "hdfs-site":{  
+            "dfs.namenode.name.dir":"/hadoop/hdfs/namenode",
+            "dfs.datanode.data.dir":"/hadoop/hdfs/data"
+         }
+      }
+    ]
+}

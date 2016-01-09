@@ -1,0 +1,14 @@
+{
+    "blueprint": "one-node-hdfs-yarn-blueprint",
+    "default_password": "super-secret-password", 
+    "host_groups": [
+        {
+            "hosts": [
+                {
+                    "fqdn": "c6401.ambari.apache.org"
+                }
+            ], 
+            "name": "host_group_1"
+        }
+    ]
+}
