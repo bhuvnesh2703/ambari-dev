@@ -5,10 +5,10 @@ Pre-requisite:
 - Working vagrant environment
 
 Cluster deployment options:
-1. Single Node HDFS cluster
-2. Single Node HDFS and YARN cluster
-3. Three node HDFS cluster
-4. Three node HDFS and YARN cluster
+- Single Node HDFS cluster
+- Single Node HDFS and YARN cluster
+- Three node HDFS cluster
+- Three node HDFS and YARN cluster
 
 Steps to execute:
 - git clone git@github.com:u39kun/ambari-vagrant.git
