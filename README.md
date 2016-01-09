@@ -11,7 +11,7 @@ Steps to execute:
 - cd ambari-vagrant/centos6.4/
 - git clone git@github.com:bhuvnesh2703/ambari-dev.git
 - cd ambari-dev
-- ./setupVagrantEnv.sh
+- ./install_ambari_cluster.sh
 
 TODO:
 - Allow 3 node cluster deployment
