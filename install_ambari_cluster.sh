@@ -33,7 +33,7 @@ setup_tars() {
   if [ ! -f ${AMBARI_TARBALL} ] ; then 
     wget ${AMBARI_TARBALL_DOWNLOAD_LINK}
   fi
-  AMBARI_FOLDERNAME=$(tar -tf ${AMBARI_TARBALL} | head -1 | tr -d "/")
+  export AMBARI_FOLDERNAME=$(tar -tf ${AMBARI_TARBALL} | head -1 | tr -d "/")
   if [ ! -d ${AMBARI_FOLDERNAME} ] ; then
     tar -xzf ${AMBARI_TARBALL}
   fi
@@ -41,7 +41,7 @@ setup_tars() {
   if [ ! -f ${PHD_TARBALL} ] ; then 
     wget ${PHD_TARBALL_DOWNLOAD_LINK}
   fi
-  PHD_FOLDERNAME=$(tar -tf ${PHD_TARBALL} | head -1 | tr -d "/")
+  export PHD_FOLDERNAME=$(tar -tf ${PHD_TARBALL} | head -1 | tr -d "/")
   if [ ! -d ${PHD_FOLDERNAME} ] ; then
     tar -xzf ${PHD_TARBALL}
   fi
@@ -49,7 +49,7 @@ setup_tars() {
   if [ ! -f ${PHD_UTILS_TARBALL} ] ; then 
     wget ${PHD_UTILS_TARBALL_DOWNLOAD_LINK}
   fi
-  PHD_UTILS_FOLDERNAME=$(tar -tf ${PHD_UTILS_TARBALL} | head -1 | tr -d "/")
+  export PHD_UTILS_FOLDERNAME=$(tar -tf ${PHD_UTILS_TARBALL} | head -1 | tr -d "/")
   if [ ! -d ${PHD_UTILS_FOLDERNAME} ] ; then
     tar -xzf ${PHD_UTILS_TARBALL}
   fi 
@@ -57,7 +57,7 @@ setup_tars() {
   if [ ! -f ${HDB_TARBALL} ] ; then 
     wget ${HDB_TARBALL_DOWNLOAD_LINK}
   fi
-  HDB_FOLDERNAME=$(tar -tf ${HDB_TARBALL} | head -1 | tr -d "/")
+  export HDB_FOLDERNAME=$(tar -tf ${HDB_TARBALL} | head -1 | tr -d "/")
   if [ ! -d ${HDB_FOLDERNAME} ] ; then
     tar -xzf ${HDB_TARBALL}
   fi    
@@ -65,7 +65,7 @@ setup_tars() {
   if [ ! -f ${HAWQ_PLUGIN_TARBALL} ] ; then 
     wget ${HAWQ_PLUGIN_TARBALL_DOWNLOAD_LINK}
   fi
-  HAWQ_PLUGIN_FOLDERNAME=$(tar -tf ${HAWQ_PLUGIN_TARBALL} | head -1 | tr -d "/")
+  export HAWQ_PLUGIN_FOLDERNAME=$(tar -tf ${HAWQ_PLUGIN_TARBALL} | head -1 | tr -d "/")
   if [ ! -d ${HAWQ_PLUGIN_FOLDERNAME} ] ; then
     tar -xzf ${HAWQ_PLUGIN_TARBALL}
   fi
@@ -107,14 +107,14 @@ setup_ambari_server() {
     <reposinfo>
       <os family=\"redhat6\">
         <repo>
-          <baseurl>http://c6401.ambari.apache.org/PHD-3.3.2.0</baseurl>
-          <repoid>PHD-3.3.2.0</repoid>
-          <reponame>PHD-3.3.2.0</reponame>
+          <baseurl>http://c6401.ambari.apache.org/${PHD_FOLDERNAME}</baseurl>
+          <repoid>${PHD_FOLDERNAME}</repoid>
+          <reponame>${PHD_FOLDERNAME}</reponame>
         </repo>
         <repo>
-          <baseurl>http://c6401.ambari.apache.org/PHD-UTILS-1.1.0.20</baseurl>
-          <repoid>PHD-UTILS-1.1.0.20</repoid>
-          <reponame>PHD-UTILS-1.1.0.20</reponame>
+          <baseurl>http://c6401.ambari.apache.org/${PHD_UTILS_FOLDERNAME}</baseurl>
+          <repoid>${PHD_UTILS_FOLDERNAME}</repoid>
+          <reponame>${PHD_UTILS_FOLDERNAME}</reponame>
         </repo>
         <repo>
           <baseurl>http://c6401.ambari.apache.org/PIVOTAL-HDB</baseurl>
@@ -184,3 +184,4 @@ if [ ${user_nodes_input} -eq "2" ]; then
   bootstrap
 fi
 create_cluster ${BLUEPRINT_NAME}.json ${HOSTMAPPING_FILENAME}.json
+echo "Please verify cluster creation progress at: http://c6401.ambari.apache.org"
