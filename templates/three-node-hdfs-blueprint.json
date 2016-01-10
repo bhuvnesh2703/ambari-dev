@@ -21,13 +21,14 @@
             "name": "host_group_2", 
             "components": [
                 { "name": "SECONDARY_NAMENODE" },
+                { "name": "ZOOKEEPER_SERVER" },
                 { "name": "ZOOKEEPER_CLIENT" }, 
                 { "name": "HDFS_CLIENT" }, 
                 { "name": "DATANODE" } 
             ]
         },
         {
-            "cardinality": "3",
+            "cardinality": "1",
             "name": "host_group_3", 
             "components": [
                 { "name": "ZOOKEEPER_SERVER" },

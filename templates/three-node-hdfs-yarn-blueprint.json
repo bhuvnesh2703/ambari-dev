@@ -27,6 +27,7 @@
                 { "name": "RESOURCEMANAGER" },
                 { "name": "APP_TIMELINE_SERVER" },
                 { "name": "HISTORYSERVER" }, 
+                { "name": "ZOOKEEPER_SERVER" },
                 { "name": "ZOOKEEPER_CLIENT" }, 
                 { "name": "HDFS_CLIENT" }, 
                 { "name": "YARN_CLIENT" }, 
@@ -36,7 +37,7 @@
             ]
         },
         {
-            "cardinality": "3",
+            "cardinality": "1",
             "name": "host_group_3", 
             "components": [
                 { "name": "ZOOKEEPER_SERVER" },
