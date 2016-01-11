@@ -117,9 +117,22 @@ bootstrap() {
 }
 
 create_cluster() {
-  curl -u admin:admin -i -H 'X-Requested-By: ambari' -X POST http://c6401.ambari.apache.org:8080/api/v1/blueprints/blueprint -d @templates/$1
-  curl -u admin:admin -i -H 'X-Requested-By: ambari' -X POST http://c6401.ambari.apache.org:8080/api/v1/clusters/phd -d @templates/$2
+  curl -u admin:admin -i -H 'X-Requested-By: ambari' -X POST http://c6401.ambari.apache.org:8080/api/v1/blueprints/blueprint -d @${SCRIPT_LOCATION}/templates/$1
+  curl -u admin:admin -i -H 'X-Requested-By: ambari' -X POST http://c6401.ambari.apache.org:8080/api/v1/clusters/phd -d @${SCRIPT_LOCATION}/templates/$2
+  # Temporary workaround, otherwise after the server is restarted, agent don't report heartbeat due to exception while fetching data from table ambari.hostgroup_component
+  vagrant ssh c6401 -c """
+  export PGPASSWORD=\"bigdata\"
+  psql -U ambari -c \"update ambari.hostgroup_component set provision_action='INSTALL_AND_START'\"
+  """
 }
+# Execution starts here
+SCRIPT_RELATIVE_PATH=`dirname "$0"`
+CURRENT_DIR=`echo $PWD`
+if [ $SCRIPT_RELATIVE_PATH == "." ]; then
+  export SCRIPT_LOCATION=$CURRENT_DIR
+else
+  export SCRIPT_LOCATION=$CURRENT_DIR/$SCRIPT_RELATIVE_PATH
+fi
 
 echo """Services required, enter option 1 or 2:
         1: HDFS Service
@@ -162,8 +175,8 @@ fi
 setup_tars
 setup_vagrant ${NODES}
 setup_ambari_server
-#if [ ${user_nodes_input} -eq "2" ]; then
-#  bootstrap
-#fi
-#create_cluster ${BLUEPRINT_NAME}.json ${HOSTMAPPING_FILENAME}.json
+if [ ${user_nodes_input} -eq "2" ]; then
+  bootstrap
+fi
+create_cluster ${BLUEPRINT_NAME}.json ${HOSTMAPPING_FILENAME}.json
 echo "Please verify cluster creation progress at: http://c6401.ambari.apache.org"
