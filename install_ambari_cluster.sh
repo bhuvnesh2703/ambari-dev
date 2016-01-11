@@ -10,7 +10,7 @@ set -e
 # To test your ambari development build, update XXXXX_TARBALL_DOWNLOAD_LINK
 # link to the path of the tarball from where it can be downloaded
 ###########################################################################################
-AMBARI_TARBALL_DOWNLOAD_LINK="https://jenkins.eng.pivotal.io/jenkins/view/AMBR-OSS-BUILD/job/AMBR-OSS-BUILD-BRANCH-1/lastSuccessfulBuild/artifact/target/AMBARI-Add-Standby-Wizard-PHD-latest.tar.gz"
+AMBARI_TARBALL_DOWNLOAD_LINK="https://jenkins.eng.pivotal.io/jenkins/view/AMBR-OSS-BUILD/job/AMBR-OSS-BUILD-BRANCH-2/42/artifact/target/AMBARI-109851170-Remove-Hawq-StanbyMaster-Address-Host-param-PHD-42.tar.gz"
 PHD_TARBALL_DOWNLOAD_LINK="http://internal-dist-elb-877805753.us-west-2.elb.amazonaws.com/dist/hortonworks/certified/PHD-3.3.2.0-2950-centos6.tar.gz" 
 PHD_UTILS_TARBALL_DOWNLOAD_LINK="http://internal-dist-elb-877805753.us-west-2.elb.amazonaws.com/dist/hortonworks/certified/PHD-UTILS-1.1.0.20-centos6.tar.gz"
 HDB_TARBALL_DOWNLOAD_LINK="http://internal-dist-elb-877805753.us-west-2.elb.amazonaws.com/dist/HAWQ/stable/pivotal-hdb-latest-stable.tar.gz"
@@ -26,11 +26,17 @@ setup_tars() {
   for DOWNLOAD_LINK in $AMBARI_TARBALL_DOWNLOAD_LINK $PHD_TARBALL_DOWNLOAD_LINK $PHD_UTILS_TARBALL_DOWNLOAD_LINK $HDB_TARBALL_DOWNLOAD_LINK $HAWQ_PLUGIN_TARBALL_DOWNLOAD_LINK
   do
     TAR_NAME=`basename ${DOWNLOAD_LINK}`
-    echo ${TAR_NAME}
+    if [[ ${TAR_NAME} == AMBARI* ]]; then 
+      rm -f ${TAR_NAME}
+    fi
     if [ ! -f ${TAR_NAME} ] ; then
       wget ${DOWNLOAD_LINK}
     fi
+
     FOLDER_NAME=$(tar -tf ${TAR_NAME} | head -1 | tr -d "/")
+    if [[ ${FOLDER_NAME} == AMBARI* ]]; then 
+      rm -rf ${FOLDER_NAME}
+    fi
     if [ ! -d ${FOLDER_NAME} ]; then
       tar -xvzf ${TAR_NAME}
     fi
@@ -126,6 +132,13 @@ create_cluster() {
   """
 }
 # Execution starts here
+if [ "$1" == "--cleanup" ]; then
+  vagrant destroy -f c6401
+  vagrant destroy -f c6402
+  vagrant destroy -f c6403
+  exit 1
+fi
+
 SCRIPT_RELATIVE_PATH=`dirname "$0"`
 CURRENT_DIR=`echo $PWD`
 if [ $SCRIPT_RELATIVE_PATH == "." ]; then
