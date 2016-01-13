@@ -20,9 +20,11 @@ Steps to execute:
 - git clone git@github.com:bhuvnesh2703/ambari-dev.git
 - cd ambari-dev
 - Edit install_ambari_cluster.sh to update the below section with the links to download the respective tarballs for AMBARI, PHD, PHD-UTILS, HDB, HAWQ-PLUGIN
-#XXXX_TARBALL_DOWNLOAD_LINK="<tarball link>"
-#Example:
-#HDB_TARBALL_DOWNLOAD_LINK="http://internal-dist-elb-877805753.us-west-2.elb.amazonaws.com/dist/HAWQ/stable/pivotal-hdb-latest-stable.tar.gz"
+```
+XXXX_TARBALL_DOWNLOAD_LINK="<tarball link>"
+Example:
+HDB_TARBALL_DOWNLOAD_LINK="http://internal-dist-elb-877805753.us-west-2.elb.amazonaws.com/dist/HAWQ/stable/pivotal-hdb-latest-stable.tar.gz"
+```
 - ./install_ambari_cluster.sh
 - Login: http://c6401.ambari.apache.org:8080
 
