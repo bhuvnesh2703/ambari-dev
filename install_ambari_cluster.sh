@@ -10,7 +10,7 @@ set -e
 # To test your ambari development build, update XXXXX_TARBALL_DOWNLOAD_LINK
 # link to the path of the tarball from where it can be downloaded
 ###########################################################################################
-AMBARI_TARBALL_DOWNLOAD_LINK="https://jenkins.eng.pivotal.io/jenkins/view/AMBR-OSS-BUILD/job/AMBR-OSS-BUILD-BRANCH-2/42/artifact/target/AMBARI-109851170-Remove-Hawq-StanbyMaster-Address-Host-param-PHD-42.tar.gz"
+AMBARI_TARBALL_DOWNLOAD_LINK="https://jenkins.eng.pivotal.io/jenkins/view/AMBR-OSS-BUILD/job/AMBR-OSS-BUILD-BRANCH-1/lastSuccessfulBuild/artifact/target/AMBARI-111177100-blueprint-deploy-branch-2.2-PHD-latest.tar.gz"
 PHD_TARBALL_DOWNLOAD_LINK="http://internal-dist-elb-877805753.us-west-2.elb.amazonaws.com/dist/hortonworks/certified/PHD-3.3.2.0-2950-centos6.tar.gz" 
 PHD_UTILS_TARBALL_DOWNLOAD_LINK="http://internal-dist-elb-877805753.us-west-2.elb.amazonaws.com/dist/hortonworks/certified/PHD-UTILS-1.1.0.20-centos6.tar.gz"
 HDB_TARBALL_DOWNLOAD_LINK="http://internal-dist-elb-877805753.us-west-2.elb.amazonaws.com/dist/HAWQ/stable/pivotal-hdb-latest-stable.tar.gz"
@@ -125,10 +125,27 @@ bootstrap() {
 create_cluster() {
   curl -u admin:admin -i -H 'X-Requested-By: ambari' -X POST http://c6401.ambari.apache.org:8080/api/v1/blueprints/blueprint -d @${SCRIPT_LOCATION}/templates/$1
   curl -u admin:admin -i -H 'X-Requested-By: ambari' -X POST http://c6401.ambari.apache.org:8080/api/v1/clusters/phd -d @${SCRIPT_LOCATION}/templates/$2
-  # Temporary workaround, otherwise after the server is restarted, agent don't report heartbeat due to exception while fetching data from table ambari.hostgroup_component
+}
+
+set_kdc() {
   vagrant ssh c6401 -c """
-  export PGPASSWORD=\"bigdata\"
-  psql -U ambari -c \"update ambari.hostgroup_component set provision_action='INSTALL_AND_START'\"
+    set -e
+    HOSTNAME="c6401.ambari.apache.org"
+    sudo yum install -y krb5-server krb5-workstation krb5-libs
+    sudo sed -i \"s/default_realm = EXAMPLE.COM/default_realm = AMBARI.APACHE.ORG/\" /etc/krb5.conf
+    sudo sed -i \"s/EXAMPLE.COM = {/AMBARI.APACHE.ORG = {/\" /etc/krb5.conf
+    sudo sed -i \"s/kdc = kerberos.example.com/kdc = ${HOSTNAME}/\" /etc/krb5.conf
+    sudo sed -i \"s/admin_server = kerberos.example.com/admin_server = ${HOSTNAME}/\" /etc/krb5.conf
+    sudo sed -i \"/\.example.com = EXAMPLE.COM/d\" /etc/krb5.conf
+    sudo sed -i \"s/example.com = EXAMPLE.COM/${HOSTNAME} = AMBARI.APACHE.ORG/\" /etc/krb5.conf
+    echo \"Please be patient, this step (kdb5_util create -s) takes long. Have not debugged if there is any problem, but it works.\"
+    printf 'admin\\nadmin\\n' | sudo kdb5_util create -s
+    sudo sed -i \"s/EXAMPLE.COM/AMBARI.APACHE.ORG/\" /var/kerberos/krb5kdc/kadm5.acl
+    sudo kadmin.local -q \"addprinc -pw admin admin/admin@AMBARI.APACHE.ORG\"
+    sudo service kadmin start
+    sudo service krb5kdc start
+    echo \"Kerberos admin principal: admin/admin@AMBARI.APACHE.ORG\"
+    echo \"Kerberos admin password: admin\"
   """
 }
 # Execution starts here
@@ -162,6 +179,16 @@ echo """Nodes required, enter option 1 or 2:
 
 read user_nodes_input
 
+SET_SECURITY_FLG='N'
+echo """Do you need to setup kdc on ambari host ? Yy/Nn"""
+read user_security_input
+case "$user_security_input" in
+ y|Y) export SET_SECURITY_FLG='Y';;
+ n|N) export SET_SECURITY_FLG='N';;
+ *) echo "Please enter a valid option. Yy|Nn"
+    exit 1;;
+esac
+
 if [ ${user_nodes_input} -eq "1" ] ; then
   NODES=1
   if  [ ${user_service_input} -eq "1" ]; then
@@ -187,6 +214,9 @@ fi
 
 setup_tars
 setup_vagrant ${NODES}
+if [ $SET_SECURITY_FLG = 'Y' ] ; then 
+  set_kdc
+fi
 setup_ambari_server
 if [ ${user_nodes_input} -eq "2" ]; then
   bootstrap
