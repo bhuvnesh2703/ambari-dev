@@ -14,7 +14,7 @@ Cluster deployment options:
 - Three node HDFS cluster
 - Three node HDFS and YARN cluster
 
-Steps to execute:
+Steps to setup environment and execute script:
 - git clone git@github.com:u39kun/ambari-vagrant.git
 - cd ambari-vagrant/centos6.4/
 - git clone git@github.com:bhuvnesh2703/ambari-dev.git
