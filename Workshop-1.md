@@ -1,4 +1,4 @@
-# Workshop: Adding new parameters to UI
+## Workshop: Adding new parameters to UI
 Agenda
 Objective
 Overview of the workshop tasks
