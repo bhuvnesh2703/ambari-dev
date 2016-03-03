@@ -10,10 +10,10 @@ set -e
 # To test your ambari development build, update XXXXX_TARBALL_DOWNLOAD_LINK
 # link to the path of the tarball from where it can be downloaded
 ###########################################################################################
-AMBARI_TARBALL_DOWNLOAD_LINK="https://jenkins.eng.pivotal.io/jenkins/view/AMBR-OSS-BUILD/job/AMBR-OSS-BUILD-BRANCH-1/lastSuccessfulBuild/artifact/target/AMBARI-111177100-blueprint-deploy-branch-2.2-PHD-latest.tar.gz"
-PHD_TARBALL_DOWNLOAD_LINK="http://internal-dist-elb-877805753.us-west-2.elb.amazonaws.com/dist/hortonworks/certified/PHD-3.3.2.0-2950-centos6.tar.gz" 
+AMBARI_TARBALL_DOWNLOAD_LINK="https://jenkins.eng.pivotal.io/jenkins/view/AMBR-OSS-BUILD/job/AMBR-OSS-BUILD-trunk-PHD/lastSuccessfulBuild/artifact/target/AMBARI-trunk-PHD-latest.tar.gz"
+PHD_TARBALL_DOWNLOAD_LINK="http://internal-dist-elb-877805753.us-west-2.elb.amazonaws.com/dist/hortonworks/certified/PHD-3.3.4.0-3485-centos6.tar.gz" 
 PHD_UTILS_TARBALL_DOWNLOAD_LINK="http://internal-dist-elb-877805753.us-west-2.elb.amazonaws.com/dist/hortonworks/certified/PHD-UTILS-1.1.0.20-centos6.tar.gz"
-HDB_TARBALL_DOWNLOAD_LINK="http://internal-dist-elb-877805753.us-west-2.elb.amazonaws.com/dist/HAWQ/stable/pivotal-hdb-latest-stable.tar.gz"
+HDB_TARBALL_DOWNLOAD_LINK="http://internal-dist-elb-877805753.us-west-2.elb.amazonaws.com/dist/PHD/latest/pivotal-hdb-2.0.0.0_beta-20432.tar.gz"
 HAWQ_PLUGIN_TARBALL_DOWNLOAD_LINK="http://internal-dist-elb-877805753.us-west-2.elb.amazonaws.com/dist/PHD/latest/hawq-plugin-2.0.0-phd-latest.tar.gz"
 
 ###########################################################################################
