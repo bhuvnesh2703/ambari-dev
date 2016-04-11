@@ -1,0 +1,71 @@
+{
+    "Blueprints": {
+        "stack_name": "HDP",
+        "stack_version": "2.3",
+        "blueprint_name": "one-node-hdfs-hawq-blueprint"
+    }, 
+    "host_groups": [
+        {
+            "cardinality": "1", 
+            "name": "host_group_1", 
+            "components": [
+                { "name": "NAMENODE" },
+                { "name": "SECONDARY_NAMENODE" },
+                { "name": "ZOOKEEPER_SERVER" },
+                { "name": "APP_TIMELINE_SERVER" },
+                { "name": "RESOURCEMANAGER" },
+                { "name": "ZOOKEEPER_CLIENT" },
+                { "name": "HDFS_CLIENT" },
+                { "name": "YARN_CLIENT" }, 
+                { "name": "MAPREDUCE2_CLIENT" },
+                { "name": "NODEMANAGER" },
+                { "name": "PXF" },
+                { "name": "HAWQMASTER" },
+                { "name": "HAWQSEGMENT" },
+                { "name": "DATANODE" }
+            ]
+        } 
+    ],
+    "configurations": [
+      {  
+         "mapred-site":{
+            "mapreduce.map.java.opts":"-Xmx512m",
+            "mapreduce.reduce.java.opts":"-Xmx512m",
+            "mapreduce.map.memory.mb":"512",
+            "mapreduce.reduce.memory.mb":"512"
+         }
+      },
+      {  
+         "core-site":{  
+            "io.compression.codecs":"org.apache.hadoop.io.compress.GzipCodec,org.apache.hadoop.io.compress.DefaultCodec,org.apache.hadoop.io.compress.SnappyCodec,com.hadoop.compression.lzo.LzoCodec,com.hadoop.compression.lzo.LzopCodec",
+            "io.compression.codec.lzo.class":"com.hadoop.compression.lzo.LzoCodec"
+         }
+      },
+      {  
+         "hdfs-site":{  
+            "dfs.namenode.name.dir":"/hadoop/hdfs/namenode",
+            "dfs.datanode.data.dir":"/hadoop/hdfs/data",
+            "dfs.block.access.token.enable":"false",
+            "dfs.allow.truncate":"true"
+         }
+      },
+      {
+         "hawq-env":{
+            "hawq_password":"changeme"
+         }
+      },
+      {
+         "hawq-site":{
+            "hawq_master_address_port":"5433"
+         }
+      },
+      {
+         "yarn-site":{
+             "yarn.nodemanager.resource.cpu-vcores":2,
+             "yarn.nodemanager.resource.memory-mb":1536,
+             "yarn.scheduler.maximum-allocation-vcores":2,
+             "yarn.scheduler.maximum-allocation-mb":1536
+         }
+      }
+    ]
+}
